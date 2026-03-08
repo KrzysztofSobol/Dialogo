@@ -5,7 +5,7 @@
 Dokument opisuje plan testów dla projektu Dialogo.  
 Celem testów jest weryfikacja poprawności działania aplikacji, identyfikacja błędów oraz zapewnienie, że funkcjonalności systemu działają zgodnie z wymaganiami.
 
-Projekt Dialogo jest aplikacją udostępnianą w repozytorium GitHub, służącą do obsługi dialogów/modali w aplikacji webowej przy użyciu JavaScript.
+Projekt Dialogo jest aplikacją udostępnianą w repozytorium GitHub, będącą komunikatorem z możliwością tworzenia serwerów i kontaktowania się z innymi użytkownikami porzez komunikacje pisemną oraz głosową.
 
 Testy obejmują zarówno weryfikację funkcjonalności interfejsu użytkownika, jak i poprawność działania logiki aplikacji.
 
@@ -15,11 +15,13 @@ Testy obejmują zarówno weryfikację funkcjonalności interfejsu użytkownika, 
 
 Główne cele testów:
 
-- sprawdzenie poprawności działania komponentu dialogowego
-- weryfikacja poprawnego wyświetlania i ukrywania okna dialogowego
-- identyfikacja błędów w logice JavaScript
-- weryfikacja poprawnej integracji z elementami DOM
-- zapewnienie poprawnego działania w różnych przeglądarkach
+- Sprawdzenie poprawności działania funkcji komunikacji
+- Weryfikacja poprawności funkcji zarządzania serwerem
+- Obsługa tworzenia i dostępu do kont
+- Weryfikacja pod kątem bezpieczeństwa danych
+- sprawdzenie poprawnego ograniczania działań do przypisanej roli
+- Sprawdzenie poprawnego działania w różnych przeglądarkach
+- Poprawna obsługa wyświetlania elementów
 
 ---
 
@@ -29,19 +31,25 @@ Główne cele testów:
 
 Testowane będą następujące funkcjonalności:
 
-- wyświetlanie okna dialogowego po kliknięciu przycisku
-- zamykanie okna dialogowego
-- poprawne manipulowanie stylem elementu overlay
-- reakcja aplikacji na zdarzenia użytkownika (click)
+- Testy bacendowe jednostkowe i integracyjne
+- Testy frontendowe E2E automatyzujące
+- Testy wydajnościowe
+- Testowanie luk bezpieczeństwa
+- Zarządzanie wiadomościami
+- Komunikacja video/audio
+- Zarządznie kontem
+- Zarządzenie serwerem
+- Wyszukiwanie użytkowników i serwerów
+- Dołączenie i opuszczanie do serwerów
+- Logowanie i rejestracja
 
 ### Out of Scope
 
 Poza zakresem testów:
 
-- testy wydajnościowe
-- testy bezpieczeństwa
-- integracje z systemami zewnętrznymi
-- testy backendowe (projekt opiera się głównie na logice frontendowej)
+- Testy na urządzeniu mobilnym
+- Testy obciążeniowe bazy danych
+- Testy akceptacyjne i regresyjne
 
 ---
 
@@ -49,26 +57,22 @@ Poza zakresem testów:
 
 W projekcie zastosowane zostaną następujące typy testów:
 
-### Testy funkcjonalne
-Sprawdzenie czy funkcjonalności aplikacji działają zgodnie z wymaganiami.
+### Testy manualne (funkcjonalne i niefunkcjonalne)
+Ręczne testowanie działania i poprawności interfejsu użytkownika aplikacji w przeglądarce.
 
-### Testy UI
-Weryfikacja poprawności działania interfejsu użytkownika:
-- wyświetlanie dialogu
-- zamykanie dialogu
-- poprawna widoczność elementów
+### Testy automatyczne
+Automatyzacja testów E2E sprawdzająca poprawność działania aplikacji.
 
-### Testy manualne
-Ręczne testowanie działania aplikacji w przeglądarce.
+### Testy backendowe (jednostkowe i integracyjne)
+Testowanie aplikacji po stronie backendowej, sprawdzające działanie pojedynczych elementów i integracji między nimi.
 
-### Testy regresji
-Sprawdzenie czy nowe zmiany w kodzie nie powodują regresji w istniejącej funkcjonalności.
+### Testy wydajnościowe
+Testy zapewniające optymalne działanie aplikacji, niezależnie od ilości zasobów wykorzystywanych podczas korzystania z niej.
 
 ### Testy kompatybilności
 Sprawdzenie działania aplikacji w różnych przeglądarkach:
 - Chrome
 - Firefox
-- Edge
 
 ---
 
@@ -77,13 +81,11 @@ Sprawdzenie działania aplikacji w różnych przeglądarkach:
 Testy będą przeprowadzane w następującym środowisku:
 
 System operacyjny:
-- Windows 10 / 11
-- macOS
+- Windows 11
 
 Przeglądarki:
 - Google Chrome
 - Mozilla Firefox
-- Microsoft Edge
 
 Technologie:
 - JavaScript
@@ -96,10 +98,9 @@ Technologie:
 
 | Etap | Opis | Czas trwania |
 |-----|-----|-----|
-| Analiza projektu | Przegląd repozytorium i funkcjonalności | 1 dzień |
+| Zaplanowanie testów | Przygotowanie plan testu | 1 dzień |
 | Przygotowanie scenariuszy testowych | Utworzenie przypadków testowych | 1 dzień |
-| Wykonanie testów | Testy manualne funkcjonalności | 2 dni |
-| Retesty | Weryfikacja poprawek błędów | 1 dzień |
+| Wykonanie testów | Realizacja zaplanowych testów | 5 dni |
 | Raport testów | Podsumowanie wyników | 1 dzień |
 
 ---
@@ -119,7 +120,7 @@ Testy mogą się rozpocząć gdy:
 Testy mogą zostać zakończone gdy:
 
 - wszystkie zaplanowane testy zostały wykonane
-- wszystkie krytyczne błędy zostały naprawione
+- wszystkie krytyczne błędy nie wystąpują
 - raport z testów został przygotowany
 
 ---
@@ -129,16 +130,17 @@ Testy mogą zostać zakończone gdy:
 Potencjalne ryzyka projektu:
 
 - brak pełnej dokumentacji projektu
-- błędy w obsłudze zdarzeń JavaScript
+- brak dogłębnej wiedzy o projekcie
 - różnice w działaniu między przeglądarkami
-- brak automatycznych testów
+- brak wiedzy o narzędziach testerskich
 
 ---
 
 ## 9. Role i odpowiedzialności
 
-| Rola | Odpowiedzialność |
+| Osoba | Odpowiedzialność |
 |-----|-----|
-| QA Engineer | przygotowanie planu testów i wykonanie testów |
-| Developer | implementacja funkcjonalności i naprawa błędów |
-| Reviewer | przegląd kodu oraz wyników testów |
+| QA Lead (Urszula Konopko) | przygotowanie planu testów i wykonanie testów automatycznych |
+| QA Engineer (Eryk Śliwowski) | testy wydajnościowe oraz testy manualne na podstawie rozpisanych scenariuszy testowych |
+| QA Engineer (Mateusz Izdebski) | testy integracyjne oraz testy manualne na podstawie rozpisanych scenariuszy testowych |
+| QA Engineer (Krzysztof Sobolewski) | testy jednostkowe oraz testy manualne na podstawie rozpisanych scenariuszy testowych |
