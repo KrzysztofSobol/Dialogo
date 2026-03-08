@@ -2,7 +2,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { string } from 'yup';
 import { Message } from '~/models/messageModel';
 
-const wss = new WebSocketServer({ port: 3001 });
+export const wss = new WebSocketServer({ port: 3001 });
 
 const clientsByChannel = new Map<string, Set<WebSocket>>();
 const connectedClients = new Set<{ userId: string, ws: WebSocket }>();
