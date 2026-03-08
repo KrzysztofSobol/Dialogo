@@ -1,8 +1,19 @@
 import { WebSocketServer, WebSocket } from 'ws';
-import { string } from 'yup';
 import { Message } from '~/models/messageModel';
 
-export const wss = new WebSocketServer({ port: 3001 });
+const websocketPort = process.env.VITEST ? 0 : 3001;
+
+export const wss = new WebSocketServer({ port: websocketPort });
+
+export function getWebSocketPort() {
+    const address = wss.address();
+
+    if (address && typeof address === 'object') {
+        return address.port;
+    }
+
+    return websocketPort;
+}
 
 const clientsByChannel = new Map<string, Set<WebSocket>>();
 const connectedClients = new Set<{ userId: string, ws: WebSocket }>();
@@ -73,11 +84,12 @@ function handleChannelConnection(ws: WebSocket, userId: string, channelId: strin
 }
 
 function handleNotificationConnection(ws: WebSocket, userId: string ) {
-    connectedClients.add({ userId, ws });
+    const client = { userId, ws };
+    connectedClients.add(client);
     console.log(`User: ${userId} connected to notifications clients: ${connectedClients.size}`);
 
     ws.on('close', () => {
-        connectedClients.delete({ userId, ws });
+        connectedClients.delete(client);
         console.log(`User: ${userId} disconnected from notifications clients: ${connectedClients.size}`);
     });
 }
