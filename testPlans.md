@@ -5,7 +5,7 @@
 Dokument opisuje plan testów dla projektu Dialogo.  
 Celem testów jest weryfikacja poprawności działania aplikacji, identyfikacja błędów oraz zapewnienie, że funkcjonalności systemu działają zgodnie z wymaganiami.
 
-Projekt Dialogo jest aplikacją udostępnianą w repozytorium GitHub, będącą komunikatorem z możliwością tworzenia serwerów i kontaktowania się z innymi użytkownikami porzez komunikacje pisemną oraz głosową.
+Projekt Dialogo jest aplikacją udostępnianą w repozytorium GitHub, będącą komunikatorem z możliwością tworzenia serwerów i kontaktowania się z innymi użytkownikami poprzez komunikacje pisemną oraz głosową.
 
 Testy obejmują zarówno weryfikację funkcjonalności interfejsu użytkownika, jak i poprawność działania logiki aplikacji.
 
@@ -31,14 +31,14 @@ Główne cele testów:
 
 Testowane będą następujące funkcjonalności:
 
-- Testy bacendowe jednostkowe i integracyjne
+- Testy backendowe jednostkowe i integracyjne
 - Testy frontendowe E2E automatyzujące
 - Testy wydajnościowe
 - Testowanie luk bezpieczeństwa
 - Zarządzanie wiadomościami
 - Komunikacja video/audio
-- Zarządznie kontem
-- Zarządzenie serwerem
+- Zarządzanie kontem
+- Zarządzanie serwerem
 - Wyszukiwanie użytkowników i serwerów
 - Dołączenie i opuszczanie do serwerów
 - Logowanie i rejestracja
