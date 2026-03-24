@@ -24,13 +24,16 @@ test.describe('Autoryzacja i Profil', () => {
 
   // TC2: Aktualizacja profilu i zmiana awatara
   test('TC2: Wgranie nowego awatara profilu', async ({ userA }) => {
-    // Zakładamy, że userA jest już zalogowany (np. przez global setup lub API)
     await userA.layout.gotoProfile();
+    const oldAvatarSrc = await userA.layout.avatarImage.getAttribute('src') ?? '';
+    const reloadPromise = userA.page.waitForResponse(response => 
+        response.url().includes('/api/users/get') && response.status() === 200
+    );
     await userA.layout.uploadAvatar('e2e/test-data/new-avatar.jpg');
-    
-    await expect(userA.layout.profileAvatar).toHaveAttribute('src', /new-avatar/);
-    await userA.page.reload();
-    await expect(userA.layout.profileAvatar).toHaveAttribute('src', /new-avatar/); // Weryfikacja po odświeżeniu
+    await reloadPromise;
+    await expect(userA.layout.avatarImage).toHaveAttribute('src', /\/avatars\/.*\.jpg/);
+    const newAvatarSrc = await userA.layout.avatarImage.getAttribute('src') ?? '';
+    expect(newAvatarSrc).not.toEqual(oldAvatarSrc);
   });
 });
 
@@ -38,7 +41,7 @@ test.describe('Relacje i Prywatny Czat (P2P)', () => {
 
   // TC3: Nawiązywanie i zrywanie relacji
   test('TC3: Dodawanie i usuwanie znajomego przy pomocy kodu', async ({ userA, userB }) => {
-    const friendCode = await userB.layout.getMyFriendCode(); // Pobieramy kod usera B
+    const friendCode = await userB.layout.getMyFriendCode();
 
     await userA.layout.gotoFriends();
     await userA.layout.addFriend(friendCode);

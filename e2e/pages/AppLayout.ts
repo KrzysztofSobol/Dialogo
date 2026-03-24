@@ -3,12 +3,14 @@ import type { Page, Locator } from '@playwright/test';
 export class AppLayout {
   readonly page: Page;
   readonly mainView: Locator;
+  readonly avatarImage: Locator;
   readonly logoutButton: Locator;
   readonly profileAvatar: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.mainView = page.locator('.main-container');
+    this.avatarImage = page.locator('img.avatar');
     this.logoutButton = page.getByRole('button', { name: 'Log Out' });
     this.profileAvatar = page.locator('.avatar-container').first();
   }
