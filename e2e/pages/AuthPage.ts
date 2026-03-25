@@ -41,12 +41,13 @@ export class AuthPage {
     await this.usernameInput.fill(username);
     await this.passwordInput.fill(password);
     
+    // Czekamy na udaną rejestrację z backendu
     const registerPromise = this.page.waitForResponse(response => 
       response.url().includes('/api/auth/register') && response.status() === 200
     );
     await this.submitButton.click();
     await registerPromise;
-
-    await this.page.waitForLoadState('networkidle');
+    
+    await this.page.waitForLoadState('domcontentloaded');
   }
 }

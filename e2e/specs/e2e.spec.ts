@@ -4,17 +4,19 @@ test.describe('Autoryzacja i Profil', () => {
 
   // TC1: Pełny cykl autoryzacji
   test('TC1: Rejestracja, logowanie i wylogowanie z weryfikacją sesji', async ({ guest }, testInfo) => {
-    const randomUser = `User_${testInfo.workerIndex}_${Date.now()}`;
+    const randomUser = `User_${testInfo.project.name}_${Date.now()}`;
     await test.step('Rejestracja i Logowanie', async () => {
       await guest.auth.gotoRegister();
       await guest.auth.register(randomUser, 'SilneHaslo123!');
-      await expect(guest.auth.loginForm).toBeVisible();
+      await expect(guest.page.getByRole('button', { name: /Log In/i })).toBeVisible({ timeout: 10000 });
       await guest.auth.login(randomUser, 'SilneHaslo123!');
+      await expect(guest.layout.mainView).toBeVisible({ timeout: 15000 });
       await expect(guest.layout.mainView).toBeVisible();
     });
 
     await test.step('Wylogowanie i blokada odświeżania', async () => {
       await guest.layout.logout();
+      await guest.page.waitForLoadState('domcontentloaded');
       await expect(guest.auth.loginForm).toBeVisible();
       await guest.page.reload();
       await expect(guest.auth.loginForm).toBeVisible(); 
