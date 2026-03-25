@@ -9,7 +9,8 @@
     "preview": "nuxt preview",
     "test": "vitest --run server/tests/websocket.performance.spec.ts",
     "test:perf": "vitest --run server/tests/websocket.performance.spec.ts",
-    "test:all": "npm run test:perf",
+    "test:unit": "vitest --run tests/",
+    "test:all": "npm run test:perf && npm run test:unit",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
