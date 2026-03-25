@@ -65,7 +65,8 @@ export class AppLayout {
   // Akcje dla serwerów w layoutcie
   serverIcon(name: string): Locator {
     // Wyszukuje ikonę serwera na pasku nawigacyjnym po nazwie/tekście
-    return this.page.locator('a').filter({ hasText: name });
+    const exactMatchRegex = new RegExp(`^${name}$`);
+    return this.page.locator('div').filter({ hasText: exactMatchRegex }).nth(2);
   }
 
   async leaveServer(name: string) {

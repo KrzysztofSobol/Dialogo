@@ -6,7 +6,6 @@ export class ServerPage {
   // Selektory dla tworzenia serwera
   readonly addServerButton: Locator;
   readonly serverNameInput: Locator;
-  readonly serverIconInput: Locator;
   readonly submitServerButton: Locator;
   
   // Selektory dla tworzenia kanałów
@@ -28,14 +27,13 @@ export class ServerPage {
     
     // Tworzenie serwera (na podstawie my-servers.vue)
     this.addServerButton = page.getByRole('button', { name: /Utwórz|Create/ }); 
-    this.serverNameInput = page.getByPlaceholder('Nazwa serwera'); 
-    this.serverIconInput = page.locator('input[type="file"]'); // Input do wgrywania ikony serwera
-    this.submitServerButton = page.getByRole('button', { name: /Zapisz|Save/ });
+    this.serverNameInput = page.getByPlaceholder('Enter server name'); 
+    this.submitServerButton = page.locator('.action-buttons button').nth(1);
 
     // Tworzenie kanału
     this.addChannelButton = page.locator('button[aria-label*="channel"]'); // Klasa przycisku dodawania kanału
-    this.channelNameInput = page.getByPlaceholder('Wprowadź nazwę kanału');
-    this.submitChannelButton = page.getByRole('button', { name: 'Dodaj' });
+    this.channelNameInput = page.getByPlaceholder('Name');
+    this.submitChannelButton = page.locator('.new-channel-form button').nth(1);
 
     // Czat serwerowy (korzysta z messageForm.vue)
     this.messageInput = page.locator('textarea[placeholder="Enter your message content"]');
@@ -56,19 +54,19 @@ export class ServerPage {
 
   channelLink(channelName: string) {
     // Zwraca konkretny link do kanału z listy po lewej stronie
-    return this.page.getByRole('link', { name: channelName });
+    return this.page.getByRole('listitem').filter({ hasText: channelName });
   }
 
   // --- METODY DO ZARZĄDZANIA SERWEREM ---
 
-  async createServer(name: string, iconPath?: string) {
+  async createServer(name: string) {
     await this.page.goto('/my-servers');
     await this.addServerButton.click();
     await this.serverNameInput.fill(name);
     
-    if (iconPath) {
-      await this.serverIconInput.setInputFiles(iconPath);
-    }
+    // if (iconPath) {
+    //   await this.serverIconInput.setInputFiles(iconPath);
+    // }
     
     await this.submitServerButton.click();
     // Oczekiwanie aż zniknie formularz lub pojawi się potwierdzenie

@@ -79,9 +79,13 @@ test.describe('Relacje i Prywatny Czat (P2P)', () => {
 test.describe('Zarządzanie Serwerami i Moderacja', () => {
 
   // TC5: Zakładanie serwera i struktury kanałów
-  test('TC5: Tworzenie serwera i kanału tekstowego', async ({ userA }) => {
-    await userA.server.createServer('Serwer Testowy', 'test-data/server-icon.png');
-    await expect(userA.layout.serverIcon('Serwer Testowy')).toBeVisible();
+  test('TC5: Tworzenie serwera i kanału tekstowego', async ({ userA }, testInfo) => {
+    const uniqueServerName = `Serwer Testowy_${testInfo.workerIndex}_${Date.now()}`;
+    await userA.server.createServer(uniqueServerName);
+    const serverCard = userA.layout.serverIcon(uniqueServerName);
+    await expect(serverCard).toBeVisible();
+    await serverCard.click();
+    await userA.page.waitForURL('**/server/**');
 
     await userA.server.createChannel('ogólny');
     await expect(userA.server.channelLink('ogólny')).toBeVisible();
