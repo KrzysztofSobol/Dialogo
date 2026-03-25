@@ -6,7 +6,7 @@ export class AuthPage {
   readonly usernameInput: Locator;
   readonly passwordInput: Locator;
   readonly submitButton: Locator;
-  readonly toggleModeButton: Locator;
+  readonly toggleModeLink: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -14,7 +14,8 @@ export class AuthPage {
     this.usernameInput = page.getByRole('textbox', { name: 'Username' });
     this.passwordInput = page.getByRole('textbox', { name: 'Password' });
     this.submitButton = page.locator('button[type="submit"]');
-    this.toggleModeButton = page.getByRole('button', { name: "Don't have an account?" });
+    // The toggle is a <ULink> (renders as <a>), not a <button>
+    this.toggleModeLink = page.getByText(/Don't have an account|Already have an account/);
   }
 
   async goto() {
@@ -34,14 +35,13 @@ export class AuthPage {
 
   async gotoRegister() {
     await this.goto();
-    await this.toggleModeButton.click();
+    await this.toggleModeLink.click();
   }
 
   async register(username: string, password: string) {
     await this.usernameInput.fill(username);
     await this.passwordInput.fill(password);
     
-    // Czekamy na udaną rejestrację z backendu
     const registerPromise = this.page.waitForResponse(response => 
       response.url().includes('/api/auth/register') && response.status() === 200
     );

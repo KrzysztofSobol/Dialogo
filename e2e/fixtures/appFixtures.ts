@@ -1,11 +1,10 @@
-// tests/fixtures/appFixtures.ts
 import { test as base, type Page } from '@playwright/test';
 import { AuthPage } from '../pages/AuthPage';
 import { ChatPage } from '../pages/ChatPage';
 import { ServerPage } from '../pages/ServerPage';
 import { AppLayout } from '../pages/AppLayout';
 
-// Zbieramy wszystkie Page Objecty w jeden obiekt użytkownika
+// Aggregate all Page Objects into a single user object
 export class AppUser {
   auth: AuthPage;
   chat: ChatPage;
@@ -20,47 +19,37 @@ export class AppUser {
   }
 }
 
-// Tworzymy Custom Fixture dla testów wymagających dwóch zalogowanych osób
+// Helper: create a logged-in user context
+async function createLoggedInUser(browser: any, username: string, password: string): Promise<{ user: AppUser; context: any }> {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const user = new AppUser(page);
+
+  await user.auth.goto();
+  await user.auth.login(username, password);
+
+  return { user, context };
+}
+
+// Custom Fixtures: guest (not logged in), userA & userB (pre-logged in)
 export const test = base.extend<{ userA: AppUser; userB: AppUser; guest: AppUser }>({
 
-   guest: async ({ page }, use) => {
+  guest: async ({ page }, use) => {
     const guest = new AppUser(page);
     await use(guest);
   },
-    
+
   userA: async ({ browser }, use) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const userA = new AppUser(page);
-    
-    await userA.auth.goto();
-    await userA.auth.usernameInput.fill('UserA');
-    await userA.auth.passwordInput.fill('Test1234!');
-    const loginPromise = page.waitForResponse(response => 
-      response.url().includes('/api/auth/login') && response.status() === 200
-    );
-    await userA.auth.submitButton.click();
-    await loginPromise;
-    await page.waitForLoadState('networkidle');
-    await use(userA);
+    const { user, context } = await createLoggedInUser(browser, 'UserA', 'Test1234!');
+    await use(user);
     await context.close();
   },
+
   userB: async ({ browser }, use) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const userB = new AppUser(page);
-    
-    await userB.auth.goto();
-    await userB.auth.usernameInput.fill('UserB');
-    await userB.auth.passwordInput.fill('Test1234!');
-    const loginPromise = page.waitForResponse(response => 
-      response.url().includes('/api/auth/login') && response.status() === 200
-    );
-    await userB.auth.submitButton.click();
-    await loginPromise;
-    await page.waitForLoadState('networkidle');
-    await use(userB);
+    const { user, context } = await createLoggedInUser(browser, 'UserB', 'Test1234!');
+    await use(user);
     await context.close();
   },
 });
+
 export { expect } from '@playwright/test';

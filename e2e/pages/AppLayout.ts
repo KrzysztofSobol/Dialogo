@@ -38,18 +38,22 @@ export class AppLayout {
     await fileChooser.setFiles(filePath);
   }
 
-  // Akcje dla znajomych
+  // --- Friend actions ---
+
   async getMyFriendCode(): Promise<string> {
     await this.gotoProfile();
-    const friendCodeDiv = this.page.locator('div', { hasText: 'Friend Code:' }).last();
-    const fullText = await friendCodeDiv.innerText();
+    // Wait for profile to load by waiting for the Friend Code text
+    const friendCodeElement = this.page.locator('div').filter({ hasText: /^Friend Code:/ }).last();
+    const fullText = await friendCodeElement.innerText();
     const cleanCode = fullText.replace('Friend Code:', '').trim();
     return cleanCode;
   }
 
   async addFriend(code: string) {
-    await this.page.locator('input[placeholder="Enter your friend code ..."]').fill(code);
+    await this.page.getByPlaceholder('Enter your friend code ...').fill(code);
     await this.page.getByRole('button', { name: 'Add Friend' }).click();
+    // Wait for the API response
+    await this.page.waitForTimeout(1000);
   }
 
   friendListItem(name: string): Locator {
@@ -62,21 +66,25 @@ export class AppLayout {
     await friendElement.locator('button[title="Remove friend"]').click();
   }
 
-  // Akcje dla serwerów w layoutcie
-  serverIcon(name: string): Locator {
-    // Wyszukuje ikonę serwera na pasku nawigacyjnym po nazwie/tekście
-    const exactMatchRegex = new RegExp(`^${name}$`);
-    return this.page.locator('div').filter({ hasText: exactMatchRegex }).nth(2);
+  // --- Server actions in layout ---
+
+  // Find a server card on the my-servers page by its title
+  serverCard(name: string): Locator {
+    return this.page.locator('.server-card').filter({ hasText: name });
   }
 
-  async leaveServer(name: string) {
-    await this.serverIcon(name).click({ button: 'right' }); // prawy przycisk myszy
-    await this.page.getByText('Opuść serwer').click();
-    await this.page.getByRole('button', { name: 'Potwierdź' }).click(); // potwierdzenie modala
+  // Check if a server is visible on the my-servers page
+  async isServerVisible(name: string): Promise<boolean> {
+    await this.page.goto('/my-servers', { waitUntil: 'domcontentloaded' });
+    // Wait a bit for the list to load
+    await this.page.waitForTimeout(1500);
+    return this.serverCard(name).isVisible();
   }
 
-  // Notyfikacje
+  // --- Notifications ---
+
+  // Nuxt UI UNotifications renders toasts; target the notification text directly
   toastNotification(text: string) {
-    return this.page.locator('.notification-content', { hasText: text });
+    return this.page.getByText(text);
   }
 }
