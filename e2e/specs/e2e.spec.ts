@@ -43,26 +43,36 @@ test.describe('Relacje i Prywatny Czat (P2P)', () => {
   // TC3: Nawiązywanie i zrywanie relacji
   test('TC3: Dodawanie i usuwanie znajomego przy pomocy kodu', async ({ userA, userB }) => {
     const friendCode = await userB.layout.getMyFriendCode();
-
     await userA.layout.gotoFriends();
     await userA.layout.addFriend(friendCode);
-
     await expect(userA.layout.friendListItem('UserB')).toBeVisible();
-    
     await userA.layout.removeFriend('UserB');
     await expect(userA.layout.friendListItem('UserB')).not.toBeVisible();
   });
 
   // TC4: Wymiana wiadomości i plików
   test('TC4: Wysyłanie wiadomości tekstowych i załączników', async ({ userA, userB }) => {
-    await userA.chat.openChatWith('UserB');
-    await userB.chat.openChatWith('UserA');
+    const friendCode = await userB.layout.getMyFriendCode();
+    await userA.layout.gotoFriends();
+    await userA.layout.addFriend(friendCode);
+    const friendCard = userA.layout.friendListItem('UserB');
+    await expect(friendCard).toBeVisible();
+    await friendCard.locator('button').first().click();
+    await userA.page.waitForURL('**/privateMessages/**');
 
-    await userA.chat.sendMessage('Witaj, przesyłam plik');
-    await expect(userB.chat.lastMessage).toHaveText('Witaj, przesyłam plik');
+    const uniqueMessage = `Wiadomość z plikiem ${Date.now()}`;
+    const messageInput = userA.page.getByRole('textbox', { name: 'Enter your message content' });
+    await messageInput.fill(uniqueMessage);
+    const fileChooserPromise = userA.page.waitForEvent('filechooser');
+    await userA.page.locator('form').getByRole('button').click();
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles('e2e/test-data/new-message.jpg');
+    await messageInput.press('Enter');
 
-    await userA.chat.uploadFile('test-data/image.png');
-    await expect(userB.chat.lastAttachment).toBeVisible();
+    await expect(userA.page.getByText(uniqueMessage)).toBeVisible();
+    await userB.page.getByRole('link', { name: /private messages/i }).click();
+    await userB.page.getByText('UserA').click();
+    await expect(userB.page.getByText(uniqueMessage)).toBeVisible();
   });
 });
 

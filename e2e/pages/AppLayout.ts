@@ -58,8 +58,8 @@ export class AppLayout {
 
   async removeFriend(name: string) {
     const friendElement = this.friendListItem(name);
-    await friendElement.locator('button[title="Remove friend"]').click();
     this.page.on('dialog', dialog => dialog.accept());
+    await friendElement.locator('button[title="Remove friend"]').click();
   }
 
   // Akcje dla serwerów w layoutcie
