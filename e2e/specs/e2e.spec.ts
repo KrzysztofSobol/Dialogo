@@ -8,13 +8,12 @@ test.describe('Autoryzacja i Profil', () => {
     await test.step('Rejestracja i Logowanie', async () => {
       await guest.auth.gotoRegister();
       await guest.auth.register(randomUser, 'SilneHaslo123!');
-      
       await expect(guest.auth.loginForm).toBeVisible();
       await guest.auth.login(randomUser, 'SilneHaslo123!');
       await expect(guest.layout.mainView).toBeVisible();
     });
 
-    await test.step('Wylogowanie i blokada cofania', async () => {
+    await test.step('Wylogowanie i blokada odświeżania', async () => {
       await guest.layout.logout();
       await expect(guest.auth.loginForm).toBeVisible();
       await guest.page.reload();

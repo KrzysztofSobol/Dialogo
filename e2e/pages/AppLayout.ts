@@ -20,7 +20,7 @@ export class AppLayout {
   }
 
   async gotoProfile() {
-    await this.page.goto('/profile');
+    await this.page.goto('/profile', { waitUntil: 'domcontentloaded' });
   }
 
   async gotoFriends() {
