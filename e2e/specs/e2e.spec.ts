@@ -46,11 +46,9 @@ test.describe('Relacje i Prywatny Czat (P2P)', () => {
 
     await userA.layout.gotoFriends();
     await userA.layout.addFriend(friendCode);
-    
-    // Weryfikacja dodania
+
     await expect(userA.layout.friendListItem('UserB')).toBeVisible();
     
-    // Usunięcie relacji
     await userA.layout.removeFriend('UserB');
     await expect(userA.layout.friendListItem('UserB')).not.toBeVisible();
   });
@@ -58,13 +56,13 @@ test.describe('Relacje i Prywatny Czat (P2P)', () => {
   // TC4: Wymiana wiadomości i plików
   test('TC4: Wysyłanie wiadomości tekstowych i załączników', async ({ userA, userB }) => {
     await userA.chat.openChatWith('UserB');
-    await userB.chat.openChatWith('UserA'); // Obaj otwierają czat
+    await userB.chat.openChatWith('UserA');
 
     await userA.chat.sendMessage('Witaj, przesyłam plik');
     await expect(userB.chat.lastMessage).toHaveText('Witaj, przesyłam plik');
 
     await userA.chat.uploadFile('test-data/image.png');
-    await expect(userB.chat.lastAttachment).toBeVisible(); // Websocket działa natychmiast
+    await expect(userB.chat.lastAttachment).toBeVisible();
   });
 });
 

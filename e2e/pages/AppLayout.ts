@@ -24,11 +24,11 @@ export class AppLayout {
   }
 
   async gotoFriends() {
-    await this.page.goto('/friends');
+    await this.page.goto('/friends', { waitUntil: 'domcontentloaded' });
   }
 
   async gotoHelpPage() {
-    await this.page.goto('/help');
+    await this.page.goto('/help', { waitUntil: 'domcontentloaded' });
   }
 
   async uploadAvatar(filePath: string) {
@@ -40,9 +40,11 @@ export class AppLayout {
 
   // Akcje dla znajomych
   async getMyFriendCode(): Promise<string> {
-    await this.gotoFriends();
-    // Zakładamy klasę lub pole, gdzie wyświetla się kod (dostosuj do swojego kodu)
-    return await this.page.locator('.friend-code').innerText(); 
+    await this.gotoProfile();
+    const friendCodeDiv = this.page.locator('div', { hasText: 'Friend Code:' }).last();
+    const fullText = await friendCodeDiv.innerText();
+    const cleanCode = fullText.replace('Friend Code:', '').trim();
+    return cleanCode;
   }
 
   async addFriend(code: string) {
@@ -56,7 +58,8 @@ export class AppLayout {
 
   async removeFriend(name: string) {
     const friendElement = this.friendListItem(name);
-    await friendElement.locator('button').nth(0).click(); // Pierwszy przycisk w karcie to chat, drugi to video
+    await friendElement.locator('button[title="Remove friend"]').click();
+    this.page.on('dialog', dialog => dialog.accept());
   }
 
   // Akcje dla serwerów w layoutcie

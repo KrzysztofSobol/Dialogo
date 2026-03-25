@@ -30,8 +30,11 @@
                             <button @click="openChatWith(friend)">
                                 <UIcon class="icon w-5 h-5" name="i-heroicons-chat-bubble-left-right"/>
                             </button>
-                            <button  @click="startCall(friend)">
+                            <button @click="startCall(friend)">
                                 <UIcon class="icon w-5 h-5" name="i-heroicons-video-camera"/>
+                            </button>
+                            <button @click="removeFriend(friend)" title="Remove friend">
+                                <UIcon class="icon w-5 h-5 hover:text-red-500 transition-colors" name="i-heroicons-trash"/>
                             </button>
                         </div>
 
@@ -207,6 +210,30 @@ const CancelCall = async (caleeId: string) => {
         console.error('Error with starting call:', err);
     });
 };
+const removeFriend = async (friend: UserBasics) => {
+    if (!confirm(`Are you sure you want to remove ${friend.username} from your friends list?`)) return;
+
+    try {
+        const response = await $fetch<{ statusCode: number, message?: string }>('/api/friends/remove', {
+            method: 'POST',
+            body: {
+                userId: user.value?.id,
+                friendId: friend.id
+            }
+        });
+
+        if (response.statusCode === 200) {
+            friends.value = friends.value.filter(f => f.id !== friend.id);
+            toast.add({ title: 'Success', description: `${friend.username} has been removed.`, color: 'green' });
+        } else {
+            toast.add({ title: 'Error', description: 'Could not remove friend.', color: 'red' });
+        }
+    } catch (error) {
+        console.error('Error removing friend:', error);
+        toast.add({ title: 'Error', description: 'Server error.', color: 'red' });
+    }
+};
+
 onMounted(() => {
     fetchUser();
 });

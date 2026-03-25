@@ -49,13 +49,16 @@ export const test = base.extend<{ userA: AppUser; userB: AppUser; guest: AppUser
     const context = await browser.newContext();
     const page = await context.newPage();
     const userB = new AppUser(page);
-
+    
     await userB.auth.goto();
     await userB.auth.usernameInput.fill('UserB');
     await userB.auth.passwordInput.fill('Test1234!');
+    const loginPromise = page.waitForResponse(response => 
+      response.url().includes('/api/auth/login') && response.status() === 200
+    );
     await userB.auth.submitButton.click();
+    await loginPromise;
     await page.waitForLoadState('networkidle');
-    
     await use(userB);
     await context.close();
   },
