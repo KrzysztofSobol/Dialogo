@@ -2,12 +2,12 @@ import type { Page, Locator } from '@playwright/test';
 
 export class ServerPage {
   readonly page: Page;
-  
+
   // Create server (my-servers.vue)
   readonly createServerButton: Locator;
   readonly serverNameInput: Locator;
   readonly submitServerButton: Locator;
-  
+
   // Create channel (server/[serverId]/index.vue)
   readonly addChannelButton: Locator;
   readonly channelNameInput: Locator;
@@ -18,7 +18,7 @@ export class ServerPage {
 
   constructor(page: Page) {
     this.page = page;
-    
+
     // my-servers.vue: "Create a server" button
     this.createServerButton = page.getByRole('button', { name: /Create a server/i });
     // my-servers.vue: server name input inside the add-server card
@@ -31,7 +31,7 @@ export class ServerPage {
     // Channel name input
     this.channelNameInput = page.getByPlaceholder('Name');
     // Check-icon button to confirm channel creation (third button in .new-channel-form)
-    this.submitChannelButton = page.locator('.new-channel-form button').nth(2);
+    this.submitChannelButton = page.locator('.new-channel-form button.action-button').last();
 
     // Chat on server uses messageForm.vue with UTextarea
     this.messageInput = page.getByPlaceholder('Enter your message content');
@@ -93,7 +93,7 @@ export class ServerPage {
   }
 
   get lastMessage() {
-    return this.page.locator('.card').last(); 
+    return this.page.locator('.card').last();
   }
 
   // --- MODERATION ---
@@ -110,7 +110,7 @@ export class ServerPage {
   // Leave the current server via the leave icon → confirm in ScreenPopUp modal
   async leaveServer() {
     // Click the leave icon button (arrow-right-on-rectangle) in server header
-    await this.page.locator('.header-buttons button').nth(1).click();
+    await this.page.locator('.header-buttons button').nth(0).click();
     // Confirm in the "Leave Server" modal
     await this.page.getByRole('button', { name: 'Leave Server' }).click();
   }
@@ -120,7 +120,5 @@ export class ServerPage {
     await this.gotoExploreServers();
     await this.page.locator('.server-card').filter({ hasText: serverName })
       .getByRole('button', { name: 'Join' }).click();
-    // Handle the join confirmation modal on the server page
-    await this.page.getByRole('button', { name: 'Join Server' }).click();
   }
 }

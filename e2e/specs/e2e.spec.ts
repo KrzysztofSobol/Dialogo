@@ -18,7 +18,7 @@ test.describe('Autoryzacja i Profil', () => {
       await guest.page.waitForLoadState('domcontentloaded');
       await expect(guest.auth.loginForm).toBeVisible();
       await guest.page.reload();
-      await expect(guest.auth.loginForm).toBeVisible(); 
+      await expect(guest.auth.loginForm).toBeVisible();
     });
   });
 
@@ -26,8 +26,8 @@ test.describe('Autoryzacja i Profil', () => {
   test('TC2: Wgranie nowego awatara profilu', async ({ userA }) => {
     await userA.layout.gotoProfile();
     const oldAvatarSrc = await userA.layout.avatarImage.getAttribute('src') ?? '';
-    const reloadPromise = userA.page.waitForResponse(response => 
-        response.url().includes('/api/users/get') && response.status() === 200
+    const reloadPromise = userA.page.waitForResponse(response =>
+      response.url().includes('/api/users/get') && response.status() === 200
     );
     await userA.layout.uploadAvatar('e2e/test-data/new-avatar.jpg');
     await reloadPromise;
@@ -56,12 +56,10 @@ test.describe('Relacje i Prywatny Czat (P2P)', () => {
     await userA.layout.addFriend(friendCode);
     const friendCard = userA.layout.friendListItem('UserB');
     await expect(friendCard).toBeVisible();
-    // Click the chat icon button on the friend card (first button)
     await friendCard.locator('button').first().click();
     await userA.page.waitForURL('**/privateMessages/**');
 
     const uniqueMessage = `Wiadomość z plikiem ${Date.now()}`;
-    // Fill message and attach file via the FileUpload component
     await userA.chat.messageInput.fill(uniqueMessage);
     const fileChooserPromise = userA.page.waitForEvent('filechooser');
     await userA.chat.fileUploadButton.click();
@@ -70,7 +68,6 @@ test.describe('Relacje i Prywatny Czat (P2P)', () => {
     await userA.chat.messageInput.press('Enter');
 
     await expect(userA.page.getByText(uniqueMessage)).toBeVisible();
-    // UserB navigates to chats and opens the conversation
     await userB.page.goto('/chats');
     await userB.page.locator('.friend-card').filter({ hasText: 'UserA' }).click();
     await expect(userB.page.getByText(uniqueMessage)).toBeVisible();
