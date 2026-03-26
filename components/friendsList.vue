@@ -30,7 +30,7 @@
                             <button @click="openChatWith(friend)">
                                 <UIcon class="icon w-5 h-5" name="i-heroicons-chat-bubble-left-right"/>
                             </button>
-                            <button @click="startCall(friend)">
+                            <button @click="startCall(friend)" title="Video call">
                                 <UIcon class="icon w-5 h-5" name="i-heroicons-video-camera"/>
                             </button>
                             <button @click="removeFriend(friend)" title="Remove friend">
