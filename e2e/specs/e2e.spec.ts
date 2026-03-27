@@ -245,11 +245,43 @@ test.describe('Połączenia Wideo i Komunikacja Czasu Rzeczywistego', () => {
     // UserA goes to a different page (help) so the notification is visible as a toast
     await userA.layout.gotoHelpPage();
 
+    // Prepare userA to capture audio.play() calls so we can assert ringtone playback
+    await userA.page.evaluate(() => {
+      (window as any).__playedAudio = [];
+      const origPlay = HTMLMediaElement.prototype.play;
+      // Override play to record and prevent real audio playback during tests
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (HTMLMediaElement.prototype as any).play = function () {
+        try {
+          (window as any).__playedAudio.push(this.currentSrc || (this as any).src || 'audio');
+        } catch (e) {}
+        return Promise.resolve();
+      };
+      // expose a helper to read recorded plays
+      (window as any).getPlayedAudioCount = () => (window as any).__playedAudio.length;
+      // expose a helper to restore original behaviour if needed
+      (window as any).__restorePlay = () => { (HTMLMediaElement.prototype as any).play = origPlay; };
+    });
+
     // UserB sends a message
     await userB.chat.openChatWith('UserA');
     await userB.chat.sendMessage('Sprawdź powiadomienie!');
 
     // UserA should see a toast notification with the message content
     await expect(userA.layout.toastNotification('Sprawdź powiadomienie!')).toBeVisible({ timeout: 10000 });
+
+    // Wait a second to emulate UserB deciding to call after messaging
+    await new Promise((res) => setTimeout(res, 1000));
+
+    // UserB initiates a video call to UserA
+    await userB.layout.gotoFriends();
+    await userB.chat.startVideoCall();
+
+    // UserA should receive an incoming call modal and ringtone should have been triggered
+    await expect(userA.page.getByText('is calling you')).toBeVisible({ timeout: 15000 });
+
+    // Verify that audio.play() was called at least once
+    const playedCount = await userA.page.evaluate(() => (window as any).getPlayedAudioCount());
+    expect(playedCount).toBeGreaterThanOrEqual(1);
   });
 });
