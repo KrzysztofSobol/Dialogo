@@ -275,7 +275,7 @@ test.describe('Połączenia Wideo i Komunikacja Czasu Rzeczywistego', () => {
 
     // UserB initiates a video call to UserA
     await userB.layout.gotoFriends();
-    await userB.chat.startVideoCall();
+    await userB.layout.startVideoCall('UserA');
 
     // UserA should receive an incoming call modal and ringtone should have been triggered
     await expect(userA.page.getByText('is calling you')).toBeVisible({ timeout: 15000 });
