@@ -42,7 +42,6 @@ export class AppLayout {
 
   async getMyFriendCode(): Promise<string> {
     await this.gotoProfile();
-    // Wait for profile to load by waiting for the Friend Code text
     const friendCodeElement = this.page.locator('div').filter({ hasText: /^Friend Code:/ }).last();
     const fullText = await friendCodeElement.innerText();
     const cleanCode = fullText.replace('Friend Code:', '').trim();
@@ -51,9 +50,12 @@ export class AppLayout {
 
   async addFriend(code: string) {
     await this.page.getByPlaceholder('Enter your friend code ...').fill(code);
+    const addFriendPromise = this.page.waitForResponse(response =>
+      response.url().includes('/api/') && response.status() === 200
+    );
+
     await this.page.getByRole('button', { name: 'Add Friend' }).click();
-    // Wait for the API response
-    await this.page.waitForTimeout(1000);
+    await addFriendPromise;
   }
 
   friendListItem(name: string): Locator {
@@ -66,10 +68,9 @@ export class AppLayout {
     await friendElement.locator('button[title="Remove friend"]').click();
   }
 
-  // Start a video call from the friends page (click the video camera icon)
+  // --- Video call actions in layout ---
+
   async startVideoCall(name: string) {
-    // Assumes we're on the friends page with the friend visible
-    // The video camera button is on the friendsList.vue friend card
     const friendElement = this.friendListItem(name);
     this.page.on('dialog', dialog => dialog.accept());
     await friendElement.locator('button[title="Video call"]').click();
@@ -77,22 +78,21 @@ export class AppLayout {
 
   // --- Server actions in layout ---
 
-  // Find a server card on the my-servers page by its title
   serverCard(name: string): Locator {
     return this.page.locator('.server-card').filter({ hasText: name });
   }
 
-  // Check if a server is visible on the my-servers page
   async isServerVisible(name: string): Promise<boolean> {
+    const serversLoadedPromise = this.page.waitForResponse(response =>
+      response.url().includes('/api/servers') && response.status() === 200
+    );
     await this.page.goto('/my-servers', { waitUntil: 'domcontentloaded' });
-    // Wait a bit for the list to load
-    await this.page.waitForTimeout(1500);
+    await serversLoadedPromise;
     return this.serverCard(name).isVisible();
   }
 
   // --- Notifications ---
 
-  // Nuxt UI UNotifications renders toasts; target the notification text directly
   toastNotification(text: string) {
     return this.page.getByText(text);
   }

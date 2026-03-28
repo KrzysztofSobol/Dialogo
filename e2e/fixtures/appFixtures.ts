@@ -1,10 +1,9 @@
-import { test as base, type Page } from '@playwright/test';
+import { test as base, type Page, request, expect } from '@playwright/test';
 import { AuthPage } from '../pages/AuthPage';
 import { ChatPage } from '../pages/ChatPage';
 import { ServerPage } from '../pages/ServerPage';
 import { AppLayout } from '../pages/AppLayout';
 
-// Aggregate all Page Objects into a single user object
 export class AppUser {
   auth: AuthPage;
   chat: ChatPage;
@@ -19,8 +18,21 @@ export class AppUser {
   }
 }
 
-// Helper: create a logged-in user context
 async function createLoggedInUser(browser: any, username: string, password: string): Promise<{ user: AppUser; context: any }> {
+
+  const apiContext = await request.newContext();
+
+  const registerResponse = await apiContext.post('http://localhost:3000/api/auth/register', {
+    data: { username, password },
+    ignoreHTTPSErrors: true,
+  });
+
+  if (!registerResponse.ok() && registerResponse.status() !== 409) {
+    console.warn(`Zwrócono nieoczekiwany status przy tworzeniu usera ${username}: ${registerResponse.status()}`);
+  }
+
+  await apiContext.dispose();
+
   const context = await browser.newContext();
   const page = await context.newPage();
   const user = new AppUser(page);
@@ -28,10 +40,11 @@ async function createLoggedInUser(browser: any, username: string, password: stri
   await user.auth.goto();
   await user.auth.login(username, password);
 
+  await expect(user.layout.mainView).toBeVisible({ timeout: 10000 });
+
   return { user, context };
 }
 
-// Custom Fixtures: guest (not logged in), userA & userB (pre-logged in)
 export const test = base.extend<{ userA: AppUser; userB: AppUser; guest: AppUser }>({
 
   guest: async ({ page }, use) => {

@@ -91,7 +91,6 @@ test.describe('Zarządzanie Serwerami i Moderacja', () => {
 
   // TC6: Komunikacja na publicznym kanale serwera
   test('TC6: Broadcast wiadomości na serwerze', async ({ userA, userB }, testInfo) => {
-    // Create a fresh server and channel for this test
     const serverName = `MsgServer_${testInfo.workerIndex}_${Date.now()}`;
 
     await test.step('UserA tworzy serwer z kanałem', async () => {
@@ -104,13 +103,11 @@ test.describe('Zarządzanie Serwerami i Moderacja', () => {
 
     await test.step('UserB dołącza do serwera', async () => {
       await userB.server.joinServer(serverName);
-      // After joining, the user is on the server page — select the channel
       await userB.server.channelLink('czat').click();
     });
 
     await test.step('UserA wysyła wiadomość i UserB ją widzi', async () => {
       await userA.server.sendMessage('Cześć wszystkim na serwerze!');
-      // UserB should see the message via WebSocket
       await expect(userB.page.getByText('Cześć wszystkim na serwerze!')).toBeVisible({ timeout: 10000 });
     });
   });
@@ -125,9 +122,7 @@ test.describe('Zarządzanie Serwerami i Moderacja', () => {
     });
 
     await test.step('UserB opuszcza serwer', async () => {
-      // UserB should now be on the server page after joining
       await userB.server.leaveServer();
-      // Verify redirect to my-servers and server is gone
       await userB.page.waitForURL('**/my-servers');
       const isVisible = await userB.layout.isServerVisible(serverName);
       expect(isVisible).toBe(false);
@@ -146,7 +141,6 @@ test.describe('Zarządzanie Serwerami i Moderacja', () => {
     await test.step('UserA wyrzuca UserB', async () => {
       await userA.server.openServer(serverName);
       await userA.server.kickUser('UserB');
-      // Verify UserB is removed from the user list
       await expect(userA.page.getByRole('listitem').filter({ hasText: 'UserB' })).not.toBeVisible();
     });
 
@@ -168,7 +162,6 @@ test.describe('Zarządzanie Serwerami i Moderacja', () => {
     await test.step('UserA usuwa serwer', async () => {
       await userA.server.openServer(serverName);
       await userA.server.deleteServer();
-      // Should redirect after deletion
       await userA.page.waitForURL('**/my-servers');
     });
 
@@ -185,27 +178,19 @@ test.describe('Połączenia Wideo i Komunikacja Czasu Rzeczywistego', () => {
 
   // TC10: Udane nawiązanie połączenia wideo
   test('TC10: Akceptacja połączenia wideo', async ({ userA, userB }) => {
-    // Ensure users are friends first
     const friendCode = await userB.layout.getMyFriendCode();
     await userA.layout.gotoFriends();
     await userA.layout.addFriend(friendCode);
     await expect(userA.layout.friendListItem('UserB')).toBeVisible();
-
-    // UserA initiates a video call from the friends page
     await userA.layout.startVideoCall('UserB');
-
-    // UserB should see the incoming call modal
     await expect(userB.page.getByText('is calling you')).toBeVisible({ timeout: 15000 });
     await userB.chat.acceptCall();
-
-    // Both users should be redirected to the video chat page
     await expect(userA.page).toHaveURL(/videoChat/, { timeout: 10000 });
     await expect(userB.page).toHaveURL(/videoChat/, { timeout: 10000 });
   });
 
   // TC11: Anulowanie i odrzucenie połączenia wideo
   test('TC11: Przerwania dzwonienia (Decline & Cancel)', async ({ userA, userB }) => {
-    // Ensure users are friends
     const friendCode = await userB.layout.getMyFriendCode();
     await userA.layout.gotoFriends();
     await userA.layout.addFriend(friendCode);
@@ -214,12 +199,10 @@ test.describe('Połączenia Wideo i Komunikacja Czasu Rzeczywistego', () => {
     await test.step('Inicjator anuluje', async () => {
       await userA.layout.startVideoCall('UserB');
       await userA.chat.cancelCall();
-      // UserB should receive a toast that the call request ended
       await expect(userB.page.getByText('Call request ended')).toBeVisible({ timeout: 10000 });
     });
 
     await test.step('Odbiorca odrzuca', async () => {
-      // Re-navigate to friends to start a fresh call
       await userA.layout.gotoFriends();
       await expect(userA.layout.friendListItem('UserB')).toBeVisible();
       await userA.layout.startVideoCall('UserB');
@@ -232,55 +215,34 @@ test.describe('Połączenia Wideo i Komunikacja Czasu Rzeczywistego', () => {
 
   // TC12: Powiadomienia w czasie rzeczywistym i globalne WebSocket
   test('TC12: Globalne dymki powiadomień (Toast)', async ({ userA, userB }) => {
-    // Ensure users are friends and have a chat channel
     const friendCode = await userB.layout.getMyFriendCode();
     await userA.layout.gotoFriends();
     await userA.layout.addFriend(friendCode);
-    // Open chat to create the channel
     const friendCard = userA.layout.friendListItem('UserB');
     await expect(friendCard).toBeVisible();
     await friendCard.locator('button').first().click();
     await userA.page.waitForURL('**/privateMessages/**');
-
-    // UserA goes to a different page (help) so the notification is visible as a toast
     await userA.layout.gotoHelpPage();
-
-    // Prepare userA to capture audio.play() calls so we can assert ringtone playback
     await userA.page.evaluate(() => {
       (window as any).__playedAudio = [];
       const origPlay = HTMLMediaElement.prototype.play;
-      // Override play to record and prevent real audio playback during tests
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (HTMLMediaElement.prototype as any).play = function () {
         try {
           (window as any).__playedAudio.push(this.currentSrc || (this as any).src || 'audio');
-        } catch (e) {}
+        } catch (e) { }
         return Promise.resolve();
       };
-      // expose a helper to read recorded plays
       (window as any).getPlayedAudioCount = () => (window as any).__playedAudio.length;
-      // expose a helper to restore original behaviour if needed
       (window as any).__restorePlay = () => { (HTMLMediaElement.prototype as any).play = origPlay; };
     });
 
-    // UserB sends a message
     await userB.chat.openChatWith('UserA');
     await userB.chat.sendMessage('Sprawdź powiadomienie!');
-
-    // UserA should see a toast notification with the message content
     await expect(userA.layout.toastNotification('Sprawdź powiadomienie!')).toBeVisible({ timeout: 10000 });
-
-    // Wait a second to emulate UserB deciding to call after messaging
     await new Promise((res) => setTimeout(res, 1000));
-
-    // UserB initiates a video call to UserA
     await userB.layout.gotoFriends();
     await userB.layout.startVideoCall('UserA');
-
-    // UserA should receive an incoming call modal and ringtone should have been triggered
     await expect(userA.page.getByText('is calling you')).toBeVisible({ timeout: 15000 });
-
-    // Verify that audio.play() was called at least once
     const playedCount = await userA.page.evaluate(() => (window as any).getPlayedAudioCount());
     expect(playedCount).toBeGreaterThanOrEqual(1);
   });
