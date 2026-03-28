@@ -58,13 +58,6 @@ export class ChatPage {
     return this.page.locator('video').first().isVisible();
   }
 
-  // Start a video call from the friends page (click the video camera icon)
-  async startVideoCall() {
-    // Assumes we're on the friends page with the friend visible
-    // The video camera button is on the friendsList.vue friend card
-    await this.page.locator('button').filter({ has: this.page.locator('[name="i-heroicons-video-camera"]') }).first().click();
-  }
-
   // Accept incoming call via ScreenPopUp modal (Answer button)
   async acceptCall() {
     await this.page.getByRole('button', { name: 'Answer' }).click();

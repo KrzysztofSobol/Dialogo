@@ -192,7 +192,7 @@ test.describe('Połączenia Wideo i Komunikacja Czasu Rzeczywistego', () => {
     await expect(userA.layout.friendListItem('UserB')).toBeVisible();
 
     // UserA initiates a video call from the friends page
-    await userA.chat.startVideoCall();
+    await userA.layout.startVideoCall('UserB');
 
     // UserB should see the incoming call modal
     await expect(userB.page.getByText('is calling you')).toBeVisible({ timeout: 15000 });
@@ -212,7 +212,7 @@ test.describe('Połączenia Wideo i Komunikacja Czasu Rzeczywistego', () => {
     await expect(userA.layout.friendListItem('UserB')).toBeVisible();
 
     await test.step('Inicjator anuluje', async () => {
-      await userA.chat.startVideoCall();
+      await userA.layout.startVideoCall('UserB');
       await userA.chat.cancelCall();
       // UserB should receive a toast that the call request ended
       await expect(userB.page.getByText('Call request ended')).toBeVisible({ timeout: 10000 });
@@ -222,7 +222,7 @@ test.describe('Połączenia Wideo i Komunikacja Czasu Rzeczywistego', () => {
       // Re-navigate to friends to start a fresh call
       await userA.layout.gotoFriends();
       await expect(userA.layout.friendListItem('UserB')).toBeVisible();
-      await userA.chat.startVideoCall();
+      await userA.layout.startVideoCall('UserB');
       await expect(userB.page.getByText('is calling you')).toBeVisible({ timeout: 15000 });
       await userB.chat.declineCall();
       // UserA gets a toast notification about the declined call

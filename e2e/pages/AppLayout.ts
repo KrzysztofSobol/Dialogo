@@ -66,6 +66,15 @@ export class AppLayout {
     await friendElement.locator('button[title="Remove friend"]').click();
   }
 
+  // Start a video call from the friends page (click the video camera icon)
+  async startVideoCall(name: string) {
+    // Assumes we're on the friends page with the friend visible
+    // The video camera button is on the friendsList.vue friend card
+    const friendElement = this.friendListItem(name);
+    this.page.on('dialog', dialog => dialog.accept());
+    await friendElement.locator('button[title="Video call"]').click();
+  }
+
   // --- Server actions in layout ---
 
   // Find a server card on the my-servers page by its title
