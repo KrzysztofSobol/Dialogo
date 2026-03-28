@@ -34,7 +34,7 @@
                         v-if="isOwner"
                         icon="i-heroicons-plus-circle"
                         class="add-button"
-                        @click="showAddChannel = !showAddChannel"
+                        aria-label="Add channel" @click="showAddChannel = !showAddChannel"
                     />
                 </div>
 
