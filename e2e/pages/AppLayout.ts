@@ -84,7 +84,7 @@ export class AppLayout {
 
   async isServerVisible(name: string): Promise<boolean> {
     const serversLoadedPromise = this.page.waitForResponse(response =>
-      response.url().includes('/api/servers') && response.status() === 200
+      response.url().match(/\/api\/users\/.*\/servers/) !== null && response.status() === 200
     );
     await this.page.goto('/my-servers', { waitUntil: 'domcontentloaded' });
     await serversLoadedPromise;
