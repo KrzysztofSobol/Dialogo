@@ -1,0 +1,33 @@
+{
+  "cookies": [
+    {
+      "name": "session",
+      "value": "%7B%22userId%22%3A%22qum8vk2go1%22%7D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1776459000.321043,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "iconify-count",
+          "value": "0"
+        },
+        {
+          "name": "iconify-version",
+          "value": "iconify2"
+        },
+        {
+          "name": "nuxt-color-mode",
+          "value": "system"
+        }
+      ]
+    }
+  ]
+}
