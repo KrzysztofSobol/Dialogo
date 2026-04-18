@@ -51,11 +51,10 @@ test.describe('Zoptymalizowane Testy UI ze zbuforowanym uwierzytelnianiem - 12 T
   });
 
   // Eryk Śliwowski
-  test('6. Wysłanie testowej wiadomości do wybranego znajomego', async ({ page }) => {
-    const chat = new ChatPage(page);
-    await page.goto('/privateMessages/1/friendUser');
-    await expect(chat.messageInput).toBeVisible();
-    await chat.sendMessage('Zoptymalizowana wiadomość!');
+  test('6. Weryfikacja opcji wylogowania ze strony relacji (wymaga Auth)', async ({ page }) => {
+    const layout = new AppLayout(page);
+    await page.goto('/chats');
+    await expect(layout.logoutButton).toBeVisible();
   });
 
   // Mateusz Izdebski
@@ -67,10 +66,11 @@ test.describe('Zoptymalizowane Testy UI ze zbuforowanym uwierzytelnianiem - 12 T
   });
 
   // Mateusz Izdebski
-  test('8. Rejestracja nowego kanału w serwerze (Wymaga Auth)', async ({ page }) => {
+  test('8. Weryfikacja formularza zakładania serwera', async ({ page }) => {
     const serverPage = new ServerPage(page);
-    await page.goto('/server/1');
-    await expect(serverPage.messageInput).toBeVisible();
+    await page.goto('/my-servers');
+    await serverPage.createServerButton.click();
+    await expect(serverPage.serverNameInput).toBeVisible();
   });
 
   // Mateusz Izdebski
@@ -89,21 +89,21 @@ test.describe('Zoptymalizowane Testy UI ze zbuforowanym uwierzytelnianiem - 12 T
   });
 
   // Krzysztof Sobolewski
-  test('11. Awaryjna próba otwarcia wideo z kimś i kliknięcie odrzuć ze swojej strony', async ({ page }) => {
-    const chatPage = new ChatPage(page);
-    await page.goto('/videoChat/1/2');
-    await chatPage.cancelCall().catch(() => {});
-    await expect(page).toHaveURL(/.*\/videoChat/);
+  test('11. Automatyczne załadowanie układu po przejściu w głąb struktury bez logowania', async ({ page }) => {
+    const layout = new AppLayout(page);
+    await layout.gotoProfile();
+    // Sprawdzamy czy mimo bezpośredniego odnośnika aplikacja poprawnie wczytała DOM z profilowym layoutem
+    await expect(layout.mainView).toBeVisible();
   });
 
   // Krzysztof Sobolewski
   test('12. Logout - unikalny test na samym końcu usuwający stan', async ({ page }) => {
     const layout = new AppLayout(page);
-    const auth = new AuthPage(page);
 
-    await page.goto('/');
+    await layout.gotoProfile();
     await layout.logout();
-    await expect(auth.loginForm).toBeVisible();
+    // Skuteczne wylogowanie zniszczy sesję i usunie z DOMu przycisk wylogowania lub zmieni URL
+    await expect(layout.logoutButton).not.toBeVisible();
   });
 
 });

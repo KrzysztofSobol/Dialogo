@@ -30,6 +30,14 @@ test.describe('Mocking Testing (Frontend Isolation) - 12 Tests', () => {
 
   // Urszula Konopko
   test('3. Mockowanie fałszywych serwerów (Izolacja odpowiedzi)', async ({ page }) => {
+    // KRYTYCZNE: Aplikacja vue najpierw woła o użytkownika, by na podstawie jego ID pobrać serwery!
+    await page.route('**/api/users/get*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        json: { user: { id: 999, username: 'MockUser', email: 'mock@mock.com' } }
+      });
+    });
+
     await page.route('**/api/users/*/servers*', async (route) => {
       await route.fulfill({
         status: 200,
