@@ -30,7 +30,6 @@ test.describe('Mocking Testing (Frontend Isolation) - 12 Tests', () => {
 
   // Urszula Konopko
   test('3. Mockowanie fałszywych serwerów (Izolacja odpowiedzi)', async ({ page }) => {
-    // KRYTYCZNE: Aplikacja vue najpierw woła o użytkownika, by na podstawie jego ID pobrać serwery!
     await page.route('**/api/users/get*', async (route) => {
       await route.fulfill({
         status: 200,
@@ -54,7 +53,6 @@ test.describe('Mocking Testing (Frontend Isolation) - 12 Tests', () => {
     const serverPage = new ServerPage(page);
     await serverPage.gotoMyServers();
     
-    // Teraz gdy schemat się zgadza, Vue poprawnie wyrenderuje komponent i możemy to sprawdzić w DOM:
     await expect(page.getByText('Zmockowany Serwer 1').first()).toBeVisible({ timeout: 10000 });
   });
 
@@ -78,20 +76,16 @@ test.describe('Mocking Testing (Frontend Isolation) - 12 Tests', () => {
     const authPage = new AuthPage(page);
     await authPage.goto();
     
-    // Nie używamy wbudowanego authPage.login bo ono asertywnie czeka na status 200.
-    // Robimy to ręcznie:
     await authPage.usernameInput.fill('user');
     await authPage.passwordInput.fill('pass');
     await authPage.submitButton.click();
     
-    // Formularz nie powinien zniknąć bo logowanie się nie powiodło
     await expect(authPage.loginForm).toBeVisible();
   });
 
   // Eryk Śliwowski
   test('6. Mockowanie opóźnienia sieci ("Aborting/Slow network")', async ({ page }) => {
     await page.route('**/api/users/*/servers*', async (route) => {
-      // Symulujemy małe opóźnienie
       await new Promise(f => setTimeout(f, 1000));
       await route.fulfill({ status: 200, json: [] });
     });
@@ -115,17 +109,12 @@ test.describe('Mocking Testing (Frontend Isolation) - 12 Tests', () => {
     const layout = new AppLayout(page);
     await layout.gotoFriends();
     
-    // Czekamy chwilę by request zdążył polecieć. Jeśli dom się różni w projektach Nuxtowych
-    // weryfikujemy w celach edukacyjnych chociaż wywołanie endpointu lub brak wybuchu błędu
     await page.waitForTimeout(2000); 
-    // Albo pokaże ulubioną kartę ze znajomym, albo po prostu nie wywali apki
     await expect(page.getByText('MockFriend').first().or(page.locator('body'))).toBeVisible();
   });
 
   // Mateusz Izdebski
   test('8. Mockowanie pustej konwersacji na kanale', async ({ page }) => {
-    // Jeżeli ten konkretny URL nie istnieje, test wybuchnie przed mockiem.
-    // Łapiemy próbę i po prostu asertujemy przechwycenie zapytania jeśli aplikacja tam wejdzie
     let messagesRequested = false;
     await page.route('**/api/messages/*', async (route) => {
       messagesRequested = true;
@@ -133,7 +122,6 @@ test.describe('Mocking Testing (Frontend Isolation) - 12 Tests', () => {
     });
     
     await page.goto('/my-servers'); 
-    // Odpuszczamy siłowe wejscie na wyimaginowany kanał, bo SSR Nuxta rzuci nam 404 strony.
     await expect(page.locator('body')).toBeVisible();
   });
 
@@ -151,7 +139,6 @@ test.describe('Mocking Testing (Frontend Isolation) - 12 Tests', () => {
        await addInput.fill('1234');
        await layout.page.getByRole('button', { name: 'Add Friend' }).click();
     }
-    // Aplikacja nie podpięła profilu ani nie zcrashowała się
     await expect(layout.friendListItem('UserFromAPI')).toHaveCount(0);
   });
 
@@ -161,7 +148,6 @@ test.describe('Mocking Testing (Frontend Isolation) - 12 Tests', () => {
       await route.fulfill({ status: 503, json: { error: 'Service Unavailable' } });
     });
     
-    // Zapobiegamy wybuchowi strony 404
     await page.goto('/chats');
     await expect(page.locator('body')).toBeVisible();
   });
@@ -182,7 +168,6 @@ test.describe('Mocking Testing (Frontend Isolation) - 12 Tests', () => {
       await route.fulfill({ status: 403 });
     });
     
-    // Poprawiony URL - bez hardcodowania konkretnego np. server/1 który może wywalić Nuxt ERROR PAGE
     await page.goto('/my-servers');
     await expect(page.locator('.server-card').first().or(page.locator('body'))).toBeVisible();
   });

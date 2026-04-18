@@ -92,17 +92,15 @@ test.describe('Zoptymalizowane Testy UI ze zbuforowanym uwierzytelnianiem - 12 T
   test('11. Automatyczne załadowanie układu po przejściu w głąb struktury bez logowania', async ({ page }) => {
     const layout = new AppLayout(page);
     await layout.gotoProfile();
-    // Sprawdzamy czy mimo bezpośredniego odnośnika aplikacja poprawnie wczytała DOM z profilowym layoutem
     await expect(layout.mainView).toBeVisible();
   });
 
   // Krzysztof Sobolewski
-  test('12. Logout - unikalny test na samym końcu usuwający stan', async ({ page }) => {
+  test('12. Logout - test usuwający stan', async ({ page }) => {
     const layout = new AppLayout(page);
 
     await layout.gotoProfile();
     await layout.logout();
-    // Skuteczne wylogowanie zniszczy sesję i usunie z DOMu przycisk wylogowania lub zmieni URL
     await expect(layout.logoutButton).not.toBeVisible();
   });
 
