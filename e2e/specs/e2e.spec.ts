@@ -2,7 +2,7 @@ import { test, expect } from '../fixtures/appFixtures';
 
 test.describe('Autoryzacja i Profil', () => {
 
-  // TC1: Pełny cykl autoryzacji
+  // Urszula Konopko
   test('TC1: Rejestracja, logowanie i wylogowanie z weryfikacją sesji', async ({ guest }, testInfo) => {
     const randomUser = `User_${testInfo.project.name}_${Date.now()}`;
     await test.step('Rejestracja i Logowanie', async () => {
@@ -22,7 +22,7 @@ test.describe('Autoryzacja i Profil', () => {
     });
   });
 
-  // TC2: Aktualizacja profilu i zmiana awatara
+  // Urszula Konopko
   test('TC2: Wgranie nowego awatara profilu', async ({ userA }) => {
     await userA.layout.gotoProfile();
     const oldAvatarSrc = await userA.layout.avatarImage.getAttribute('src') ?? '';
@@ -39,7 +39,7 @@ test.describe('Autoryzacja i Profil', () => {
 
 test.describe('Relacje i Prywatny Czat (P2P)', () => {
 
-  // TC3: Nawiązywanie i zrywanie relacji
+  // Urszula Konopko
   test('TC3: Dodawanie i usuwanie znajomego przy pomocy kodu', async ({ userA, userB }) => {
     const friendCode = await userB.layout.getMyFriendCode();
     await userA.layout.gotoFriends();
@@ -49,7 +49,7 @@ test.describe('Relacje i Prywatny Czat (P2P)', () => {
     await expect(userA.layout.friendListItem('UserB')).not.toBeVisible();
   });
 
-  // TC4: Wymiana wiadomości i plików
+  // Eryk Śliwowski
   test('TC4: Wysyłanie wiadomości tekstowych i załączników', async ({ userA, userB }) => {
     const friendCode = await userB.layout.getMyFriendCode();
     await userA.layout.gotoFriends();
@@ -76,7 +76,7 @@ test.describe('Relacje i Prywatny Czat (P2P)', () => {
 
 test.describe('Zarządzanie Serwerami i Moderacja', () => {
 
-  // TC5: Zakładanie serwera i struktury kanałów
+  // Krzysztof Sobolewski
   test('TC5: Tworzenie serwera i kanału tekstowego', async ({ userA }, testInfo) => {
     const uniqueServerName = `Serwer_${testInfo.workerIndex}_${Date.now()}`;
     await userA.server.createServer(uniqueServerName);
@@ -89,7 +89,7 @@ test.describe('Zarządzanie Serwerami i Moderacja', () => {
     await expect(userA.server.channelLink('ogólny')).toBeVisible();
   });
 
-  // TC6: Komunikacja na publicznym kanale serwera
+  // Mateusz Izdebski
   test('TC6: Broadcast wiadomości na serwerze', async ({ userA, userB }, testInfo) => {
     const serverName = `MsgServer_${testInfo.workerIndex}_${Date.now()}`;
 
@@ -112,7 +112,7 @@ test.describe('Zarządzanie Serwerami i Moderacja', () => {
     });
   });
 
-  // TC7: Opuszczenie serwera przez zwykłego członka
+  // Mateusz Izdebski
   test('TC7: Użytkownik opuszcza serwer', async ({ userA, userB }, testInfo) => {
     const serverName = `LeaveServer_${testInfo.workerIndex}_${Date.now()}`;
 
@@ -129,7 +129,7 @@ test.describe('Zarządzanie Serwerami i Moderacja', () => {
     });
   });
 
-  // TC8: Moderacja społeczności – usunięcie członka
+  // Krzysztof Sobolewski
   test('TC8: Wyrzucenie użytkownika z serwera (Kick)', async ({ userA, userB }, testInfo) => {
     const serverName = `KickServer_${testInfo.workerIndex}_${Date.now()}`;
 
@@ -150,7 +150,7 @@ test.describe('Zarządzanie Serwerami i Moderacja', () => {
     });
   });
 
-  // TC9: Całkowite usunięcie serwera przez Właściciela
+  // Krzysztof Sobolewski
   test('TC9: Usunięcie serwera powoduje zniknięcie go u wszystkich', async ({ userA, userB }, testInfo) => {
     const serverName = `DeleteServer_${testInfo.workerIndex}_${Date.now()}`;
 
@@ -176,7 +176,7 @@ test.describe('Zarządzanie Serwerami i Moderacja', () => {
 
 test.describe('Połączenia Wideo i Komunikacja Czasu Rzeczywistego', () => {
 
-  // TC10: Udane nawiązanie połączenia wideo
+  // Eryk Śliwowski
   test('TC10: Akceptacja połączenia wideo', async ({ userA, userB }) => {
     const friendCode = await userB.layout.getMyFriendCode();
     await userA.layout.gotoFriends();
@@ -189,7 +189,7 @@ test.describe('Połączenia Wideo i Komunikacja Czasu Rzeczywistego', () => {
     await expect(userB.page).toHaveURL(/videoChat/, { timeout: 10000 });
   });
 
-  // TC11: Anulowanie i odrzucenie połączenia wideo
+  // Eryk Śliwowski
   test('TC11: Przerwania dzwonienia (Decline & Cancel)', async ({ userA, userB }) => {
     const friendCode = await userB.layout.getMyFriendCode();
     await userA.layout.gotoFriends();
@@ -213,7 +213,7 @@ test.describe('Połączenia Wideo i Komunikacja Czasu Rzeczywistego', () => {
     });
   });
 
-  // TC12: Powiadomienia w czasie rzeczywistym i globalne WebSocket
+  // Mateusz Izdebski
   test('TC12: Globalne dymki powiadomień (Toast)', async ({ userA, userB }) => {
     const friendCode = await userB.layout.getMyFriendCode();
     await userA.layout.gotoFriends();
