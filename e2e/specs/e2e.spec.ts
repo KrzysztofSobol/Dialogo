@@ -3,50 +3,115 @@ import { test, expect } from '../fixtures/appFixtures';
 test.describe('Autoryzacja i Profil', () => {
 
   // Urszula Konopko
-  test('TC1: Rejestracja, logowanie i wylogowanie z weryfikacją sesji', async ({ guest }, testInfo) => {
+  test('TC1: Pełen cykl rejestracji, logowania, nawigacji w panelu i wylogowania', async ({ guest }, testInfo) => {
     const randomUser = `User_${testInfo.project.name}_${Date.now()}`;
-    await test.step('Rejestracja i Logowanie', async () => {
+
+    await test.step('Rejestracja nowego konta testowego', async () => {
       await guest.auth.gotoRegister();
       await guest.auth.register(randomUser, 'SilneHaslo123!');
       await expect(guest.page.getByRole('button', { name: /Log In/i })).toBeVisible({ timeout: 10000 });
+    });
+
+    await test.step('Poprawne zalogowanie nowo utworzonego użytkownika', async () => {
       await guest.auth.login(randomUser, 'SilneHaslo123!');
       await expect(guest.layout.mainView).toBeVisible({ timeout: 15000 });
     });
 
-    await test.step('Wylogowanie i blokada odświeżania', async () => {
+    await test.step('Nawigacja wewnątrz panelu użytkownika', async () => {
+      await guest.layout.gotoFriends();
+      await expect(guest.page).toHaveURL(/.*\/friends/);
+      await guest.layout.gotoProfile();
+      await expect(guest.page).toHaveURL(/.*\/profile/);
+    });
+
+    await test.step('Próba odświeżenia strony jako zalogowany', async () => {
+      await guest.page.reload();
+      await expect(guest.layout.mainView).toBeVisible({ timeout: 15000 });
+    });
+
+    await test.step('Poprawne wylogowanie z aplikacji', async () => {
       await guest.layout.logout();
       await guest.page.waitForLoadState('domcontentloaded');
       await expect(guest.auth.loginForm).toBeVisible();
-      await guest.page.reload();
+    });
+
+    await test.step('Weryfikacja ochrony sesji po wylogowaniu (bramka)', async () => {
+      await guest.page.goto('/friends');
       await expect(guest.auth.loginForm).toBeVisible();
     });
   });
 
   // Urszula Konopko
-  test('TC2: Wgranie nowego awatara profilu', async ({ userA }) => {
-    await userA.layout.gotoProfile();
-    const oldAvatarSrc = await userA.layout.avatarImage.getAttribute('src') ?? '';
-    const reloadPromise = userA.page.waitForResponse(response =>
-      response.url().includes('/api/users/get') && response.status() === 200
-    );
-    await userA.layout.uploadAvatar('e2e/test-data/new-avatar.jpg');
-    await reloadPromise;
-    await expect(userA.layout.avatarImage).toHaveAttribute('src', /\/avatars\/.*\.jpg/);
-    const newAvatarSrc = await userA.layout.avatarImage.getAttribute('src') ?? '';
-    expect(newAvatarSrc).not.toEqual(oldAvatarSrc);
+  test('TC2: Dogłębna weryfikacja wgrywania awatara i utrzymania jego stanu w aplikacji', async ({ userA }) => {
+    let oldAvatarSrc = '';
+    let newAvatarSrc = '';
+
+    await test.step('Pobranie oryginalnego awatara użytkownika', async () => {
+      await userA.layout.gotoProfile();
+      oldAvatarSrc = await userA.layout.avatarImage.getAttribute('src') ?? '';
+      expect(oldAvatarSrc).toBeDefined();
+    });
+
+    await test.step('Wgranie pierwszego niestandardowego awatara', async () => {
+      const reloadPromise = userA.page.waitForResponse(response =>
+        response.url().includes('/api/users/get') && response.status() === 200
+      );
+      await userA.layout.uploadAvatar('e2e/test-data/new-avatar.jpg');
+      await reloadPromise;
+      await expect(userA.layout.avatarImage).toHaveAttribute('src', /\/avatars\/.*\.jpg/);
+      newAvatarSrc = await userA.layout.avatarImage.getAttribute('src') ?? '';
+      expect(newAvatarSrc).not.toEqual(oldAvatarSrc);
+    });
+
+    await test.step('Weryfikacja braku zaniku stanu pamięci po odświeżeniu (F5)', async () => {
+      await userA.page.reload();
+      await expect(userA.layout.avatarImage).toHaveAttribute('src', newAvatarSrc);
+    });
+
+    await test.step('Nawigacja z powrotem do profilu, obraz wciąż w najnowszej wersji', async () => {
+      await userA.layout.gotoFriends();
+      await expect(userA.page).toHaveURL(/.*\/friends/);
+      await userA.layout.gotoProfile();
+      await expect(userA.layout.avatarImage).toHaveAttribute('src', newAvatarSrc);
+    });
   });
 });
 
 test.describe('Relacje i Prywatny Czat (P2P)', () => {
 
   // Urszula Konopko
-  test('TC3: Dodawanie i usuwanie znajomego przy pomocy kodu', async ({ userA, userB }) => {
+  test('TC3: Pełen dwustronny cykl życia relacji ze znajomym (dodanie, weryfikacja, usunięcie)', async ({ userA, userB }) => {
     const friendCode = await userB.layout.getMyFriendCode();
-    await userA.layout.gotoFriends();
-    await userA.layout.addFriend(friendCode);
-    await expect(userA.layout.friendListItem('UserB')).toBeVisible();
-    await userA.layout.removeFriend('UserB');
-    await expect(userA.layout.friendListItem('UserB')).not.toBeVisible();
+
+    await test.step('UserA wyszukuje UserB i nawiązuje relację przyjaźni', async () => {
+      await userA.layout.gotoFriends();
+      await userA.layout.addFriend(friendCode);
+      await expect(userA.layout.friendListItem('UserB')).toBeVisible();
+    });
+
+    await test.step('UserB loguje się do znajomych i obustronnie potwierdza znajomość', async () => {
+      await userB.layout.gotoFriends();
+      await expect(userB.layout.friendListItem('UserA')).toBeVisible();
+    });
+
+    await test.step('UserA wchodzi ze znajomym w kontakt, przechodząc do czatu z menu', async () => {
+      const friendCard = userA.layout.friendListItem('UserB');
+      await friendCard.locator('button').first().click();
+      await userA.page.waitForURL('**/privateMessages/**');
+      await expect(userA.chat.messageInput).toBeVisible();
+    });
+
+    await test.step('UserA rezygnuje ze znajomości - powrót do widoku i usunięcie', async () => {
+      await userA.layout.gotoFriends();
+      await expect(userA.layout.friendListItem('UserB')).toBeVisible();
+      await userA.layout.removeFriend('UserB');
+      await expect(userA.layout.friendListItem('UserB')).not.toBeVisible();
+    });
+
+    await test.step('Asynchronicznie, UserB nie posiada już powiązań z UserA po odświeżeniu', async () => {
+      await userB.page.reload();
+      await expect(userB.layout.friendListItem('UserA')).not.toBeVisible();
+    });
   });
 
   // Eryk Śliwowski
